@@ -12,22 +12,21 @@ class _UploadContextState extends State<UploadContext> {
 
   Future<String> sendDataToServer(String text) async {
     try {
-      // Replace 'http://example.com/api' with your actual URL
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000'),
+        Uri.parse(
+            'http://127.0.0.1:8000/analyze'), // Updated to the correct API endpoint
         headers: {
           'Content-Type': 'application/json',
-          'Authorization':
-              'Bearer your_api_token', // Include this only if needed
+          // Remove the Authorization header if your API doesn't require it
         },
         body: jsonEncode({'text': text}),
       );
 
       if (response.statusCode == 200) {
-        // Assuming the server returns a string within a JSON object
-        return jsonDecode(response.body)['data'];
+        // Assuming the server returns data directly without a 'data' key
+        return jsonDecode(response.body).toString();
       } else {
-        throw Exception('Failed to load data');
+        return 'Failed to load data: Status code ${response.statusCode}';
       }
     } catch (e) {
       return 'Failed to send data: $e';

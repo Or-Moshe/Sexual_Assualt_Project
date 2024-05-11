@@ -13,6 +13,6 @@ print(nlp(text))
 
 def do_nlp(text):
     nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
-    return nlp
+    return nlp(text)
 
 print(do_nlp(text))

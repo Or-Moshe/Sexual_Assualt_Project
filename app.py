@@ -4,16 +4,14 @@ from nlp.scripts.execute import do_nlp
 
 app = Flask(__name__)
 
-@app.route('/analyze', methods=['POST'])
+@app.route('/analyze', methods=['GET'])
 def analyze_text():
-    data = request.json
-    #text = data['text']
-    text = "Recently, I've been feeling very anxious and overwhelmed at work. It's started to affect my sleep and my relationships. I don't feel like it's an emergency, but I could really use some advice on how to manage this stress."
-    result = do_nlp(text)
-    #result2 = predict(text)
-    print('result', result)
-    #print('result2', result2)
-    return jsonify(result)
+    text = request.args.get('text', '')
+    if text:
+        result = do_nlp(text)
+        return jsonify(result)
+    else:
+        return jsonify({"error": "no text provided"}), 400
 
 if __name__ == "__main__":
     logging.info("Flask app started")

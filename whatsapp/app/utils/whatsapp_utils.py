@@ -2,6 +2,7 @@ import logging
 from flask import current_app, jsonify
 import json
 import requests
+from nlp.scripts.routes import do_nlp
 
 # from app.services.openai_service import generate_response
 import re
@@ -45,8 +46,8 @@ def generate_response(text):
     print("text: ", text)
     result = do_nlp(text, target_dir)
     #print("result: ", result)
-    #return text.upper()
-    return result[0]['label']
+    return text.upper()
+    #return result[0]['label']
 
 
 def send_message(data):

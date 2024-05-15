@@ -2,7 +2,7 @@ import logging
 
 from app import create_app
 
-
+#run ngrok: ngrok http 8000 --on-toad-tidy.ngrok-free.app
 app = create_app()
 
 if __name__ == "__main__":

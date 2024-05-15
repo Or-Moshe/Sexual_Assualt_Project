@@ -25,9 +25,28 @@ def get_text_message_input(recipient, text):
     )
 
 
-def generate_response(response):
-    # Return text in uppercase
-    return response.upper()
+import os
+def generate_response(text):
+    current_dir = os.path.dirname(__file__)
+
+    # Construct the path to the target directory
+    target_dir = os.path.join(current_dir, "../../../nlp/models/torch-bert-base-uncased-model/")
+
+    # Print the absolute path to verify it
+    absolute_path = os.path.abspath(target_dir)
+    print("current_dir:", current_dir)
+    print("Absolute path:", absolute_path)
+
+    # Check if the directory exists
+    if not os.path.exists(absolute_path):
+        print("Directory does not exist:", absolute_path)
+    else:
+        print("Directory exists:", absolute_path)
+    print("text: ", text)
+    result = do_nlp(text, target_dir)
+    #print("result: ", result)
+    #return text.upper()
+    return result[0]['label']
 
 
 def send_message(data):

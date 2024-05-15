@@ -50,7 +50,7 @@ print(response.json())
 
 # NOTE: First reply to the message from the user in WhatsApp!
 
-
+'''
 def get_text_message_input(recipient, text):
     return json.dumps(
         {
@@ -137,3 +137,4 @@ data = get_text_message_input(
 loop = asyncio.get_event_loop()
 loop.run_until_complete(send_message(data))
 loop.close()
+'''

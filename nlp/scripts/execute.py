@@ -2,13 +2,16 @@ from transformers import pipeline, BertForSequenceClassification, BertTokenizerF
 import pandas as pd
 from nlp.scripts.preprocessing import Preprocessing
 from nlp.scripts.translate import Translate
-#model_path = "./nlp/models/torch-bert-base-uncased-model"
-#model_path = "../models/torch-bert-base-uncased-model"
-
+'''
 csv_path = "../data/withoutClassification.csv"
 tanslated_path = "../data/withoutClassificationTranslated.csv"
 model_path = "../models/torch-bert-base-uncased-model-all-data"
 result_path = "../data/withoutClassificationTranslatedResults.csv"
+'''
+csv_path = "../data/withoutClassification.csv"
+tanslated_path = "../data/withDummyTranslated_Consumer.csv"
+model_path = "../models/torch-bert-base-uncased-model-all-data-consumer"
+result_path = "../data/withoutClassificationTranslatedConsumerResults.csv"
 def classify_file():
     '''
     df = pd.read_csv(csv_path)
@@ -20,7 +23,7 @@ def classify_file():
     '''
     df = pd.read_csv(tanslated_path)
 
-    df[['label', 'score']] = df['transcriptAll_en'].apply(lambda text: do_nlp(text, model_path)).apply(pd.Series)
+    df[['label', 'score']] = df['transcriptConsumer_en'].apply(lambda text: do_nlp(text, model_path)).apply(pd.Series)
     df.to_csv(result_path, index=False)
 
 def do_nlp(text, model_path):

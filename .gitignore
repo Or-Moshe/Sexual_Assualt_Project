@@ -92,4 +92,4 @@ target/
 
 # Ignore 'data' directory
 data/
-models/
+models/ze

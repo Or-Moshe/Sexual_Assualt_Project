@@ -116,9 +116,11 @@ class Preprocessing:
         text = self.remove_empty_agent_lines(text)
         text = self.remove_emojis(text)
         text = text.replace('"', '')
+        text = text_without_quotes = text.replace("'", "")
         return text
 
     def process_dataframe(self):
+        self.df = self.df.rename(columns=lambda x: x.strip())
         self.df["transcriptAll"] = self.df["transcriptAll"].apply(self.clean_text)
         self.df['count'] = self.df["transcriptAll"].apply(lambda x: len(x.split()))
         self.df = self.df[self.df['count'] >= 30]

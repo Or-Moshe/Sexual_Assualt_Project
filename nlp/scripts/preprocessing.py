@@ -119,14 +119,15 @@ class Preprocessing:
         text = text_without_quotes = text.replace("'", "")
         return text
 
-    def process_dataframe(self):
+    def process_dataframe(self, column_to_predict):
         self.df = self.df.rename(columns=lambda x: x.strip())
-        self.df["transcriptAll"] = self.df["transcriptAll"].apply(self.clean_text)
-        self.df['count'] = self.df["transcriptAll"].apply(lambda x: len(x.split()))
+        self.df[column_to_predict] = self.df[column_to_predict].astype(str)
+        self.df[column_to_predict] = self.df[column_to_predict].apply(self.clean_text)
+        self.df['count'] = self.df[column_to_predict].apply(lambda x: len(x.split()))
         self.df = self.df[self.df['count'] >= 30]
-        columns_to_copy = ['count', 'transcriptAll']
+        columns_to_copy = ['count', column_to_predict]
         self.df = self.df[columns_to_copy].copy()
-
+        return self.df
         '''
         classification_mapping = {
             0: 'not relevant', 1: 'Emotional Assistance',

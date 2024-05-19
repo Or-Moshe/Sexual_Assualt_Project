@@ -3,3 +3,4 @@ torch
 flask
 googletrans==3.1.0a0
 python-dotenv
+openpyxl

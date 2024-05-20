@@ -54,4 +54,4 @@ def do_nlp(text, model_path):
 
 
 #print(do_nlp(text))
-classify_file()
+#classify_file()

@@ -1,17 +1,9 @@
 from flask import Flask, request, jsonify
 import logging
-from nlp.scripts.execute import do_nlp
+from nlp.scripts.routes import main_blueprint
 
 app = Flask(__name__)
-
-@app.route('/analyze', methods=['GET'])
-def analyze_text():
-    text = request.args.get('text', '')
-    if text:
-        result = do_nlp(text)
-        return jsonify(result)
-    else:
-        return jsonify({"error": "no text provided"}), 400
+app.register_blueprint(main_blueprint)
 
 if __name__ == "__main__":
     logging.info("Flask app started")

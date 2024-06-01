@@ -38,7 +38,7 @@ class Translate:
         return df
 
     def translate_dataframe(self, tanslated_path):
-        columns_to_translate = ['transcriptAll']
+        columns_to_translate = ['transcriptAll', 'transcriptConsumer']
         self.df = self.translate_columns(self.df, columns_to_translate, 600, src='he', dest='en')
         self.df.to_csv(tanslated_path, index=False)
         return self.df

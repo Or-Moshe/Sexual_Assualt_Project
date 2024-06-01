@@ -125,8 +125,8 @@ class Preprocessing:
         self.df[column_to_predict] = self.df[column_to_predict].apply(self.clean_text)
         self.df['count'] = self.df[column_to_predict].apply(lambda x: len(x.split()))
         self.df = self.df[self.df['count'] >= 30]
-        columns_to_copy = ['count', column_to_predict]
-        self.df = self.df[columns_to_copy].copy()
+        #columns_to_copy = ['count', column_to_predict]
+        #self.df = self.df[columns_to_copy].copy()
         return self.df
         '''
         classification_mapping = {

@@ -26,7 +26,7 @@ def analyze_by_vectors():
     if text:  # Check if text is not empty
         result = classify_single_text_by_vectors(text)
         print("result: ", result)
-        return jsonify(result)
+        return result
     else:
         return jsonify({"error": "No text provided"}), 400
 
@@ -51,3 +51,4 @@ def analyze_file_no_vectors():
         return jsonify(result)
     else:
         return jsonify({"error": "No text provided"}), 400
+

@@ -8,7 +8,7 @@ import openpyxl
 from nlp.scripts.preprocessing import Preprocessing
 import torch
 from nlp.scripts.translate import Translate
-from nlp.scripts.text_to_vector import text_to_vector, file_to_vector, vectorized_df
+from nlp.scripts.text_to_vector import vectorized_single_text, vectorized_df
 from nlp.scripts.vector_to_classification import classify_file
 '''
 tanslated_path = "../data/withoutClassificationTranslated.csv"
@@ -57,6 +57,10 @@ def classify_file_by_vectors():
     #final_df = classify_file(df)
 
 def classify_single_text_by_vectors(text):
+    sentiment_result = vectorized_single_text(text)
+    return convert_numpyInt_to_int(sentiment_result)
+
+def classify_single_text_by_vectors2(text):
     model_to_vector_path = "../models/text-to-vector/predict_flags-model-all-data-consumer-en"
     vector = text_to_vector(text, model_to_vector_path)
     print(f'Vector: {vector}')
@@ -108,6 +112,14 @@ def do_nlp(text, model_path):
         return None
 
 
+# Convert numpy.int32 to Python int
+def convert_numpyInt_to_int(result):
+    for key, value in result.items():
+        if isinstance(value, (np.int32, np.int64)):
+            result[key] = int(value)
+
+    return result
+
 #print(do_nlp(text))
 #classify_file()
 #translate_file()
@@ -119,5 +131,3 @@ Hey ?? please help me I fell for a twin and I'm screaming out loud Do not know N
 #classify_single_text_by_vectors(text)
 #print(f'classify_text_by_vectors results: {classify_text_by_vectors(text)}')
 #print(f'do_nlp results: {do_nlp(text, model_path)}')
-#classify_file_by_vectors()
-classify_file_by_vectors()

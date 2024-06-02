@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 
 #from app:
-#model_to_vector_path = "./nlp/models/text-to-vector/predict-vectors-from-text"
-model_to_vector_path = "../models/text-to-vector/customer-en-encoded"
+model_to_vector_path = "./nlp/models/text-to-vector/customer-en-encoded"
+#model_to_vector_path = "../models/text-to-vector/customer-en-encoded"
 
 cols = ['despair_0', 'despair_1', 'loneliness_0',
         'loneliness_1', 'emotional overflow_0', 'emotional overflow_1',
@@ -79,6 +79,6 @@ def vectorized_single_text(text):
 text = """
 Hey I don't know what's happening to me what is happening to my body I always make mistakes and don't learn Me and my big mouth my mother's cup My biggest mistake in this life that I exist I have to keep my mouth shut and do and deal with things without telling True, but now I do it like a grown-up Aaaaaaaaa There is no one I don't want anyone either, I don't have faith in anyone It's best to be alone, lonely like a bitch, the best and the truest I'm sorry I'm taking it all out on you It's best to keep the right to remain silent and that's it Obviously Do not want you are right no matter everything is fine All is well
 """
-print(vectorized_single_text(text))
+#print(vectorized_single_text(text))
 #binary_vector = get_sentiment_vector(text)
 #print(binary_vector)

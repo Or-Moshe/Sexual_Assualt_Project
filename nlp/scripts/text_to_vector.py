@@ -3,52 +3,82 @@ import torch
 import numpy as np
 import pandas as pd
 
+#from app:
+#model_to_vector_path = "./nlp/models/text-to-vector/predict-vectors-from-text"
+model_to_vector_path = "../models/text-to-vector/customer-en-encoded"
 
-def text_to_vector(text):
-    # Ensure the input is a string
-    if not isinstance(text, str):
-        text = str(text)
+cols = ['despair_0', 'despair_1', 'loneliness_0',
+        'loneliness_1', 'emotional overflow_0', 'emotional overflow_1',
+        'self blame_0', 'self blame_1', 'anxiety_0', 'anxiety_1',
+        'distrust / confusion_0', 'distrust / confusion_1',
+        'new assault / new exposure_0', 'new assault / new exposure_1',
+        'level of suicide/ level of risk_0',
+        'level of suicide/ level of risk_1',
+        'level of suicide/ level of risk_2',
+        'level of suicide/ level of risk_3',
+        'obligation to report occording law_0',
+        'obligation to report occording law_1', 'support for support circuls_0',
+        'support for support circuls_1']
 
-    model_to_vector_path = "../models/text-to-vector/customer-en-encoded"
-    model_to_vector = BertForSequenceClassification.from_pretrained(model_to_vector_path)
-    tokenizer = BertTokenizerFast.from_pretrained(model_to_vector_path)
+model = BertForSequenceClassification.from_pretrained(model_to_vector_path)
+tokenizer = BertTokenizerFast.from_pretrained(model_to_vector_path)
+model.eval()
 
-    # Tokenize the input text
-    inputs = tokenizer(text, return_tensors='pt', max_length=512, truncation=True, padding='max_length')
+def prepare_input(text):
+    encoding = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=512)
+    return encoding
 
-    # Predict the vector from the model
+def predict_sentiments(text):
+    inputs = prepare_input(text)
     with torch.no_grad():
-        outputs = model_to_vector(**inputs)
+        outputs = model(**inputs)
+        logits = outputs.logits
+    return logits
 
-    # Extract the logits from the model output
-    single_example_vector = outputs.logits.numpy().flatten().tolist()  # Convert numpy array to list
+def get_binary_vector(logits, threshold=0.5):
+    probs = torch.sigmoid(logits)
+    binary_vector = (probs > threshold).int()
+    return binary_vector
 
-    return single_example_vector
+def get_sentiment_vector(text, threshold=0.5):
+    logits = predict_sentiments(text)
+    binary_vector = get_binary_vector(logits, threshold)
+    return binary_vector.numpy().flatten()
 
+def store_sentiment_vector(text, vector):
+    data = {'transcriptConsumer_en': text}
+    print(vector)
+    for i, col in enumerate(cols):
+        data[col] = vector[i]
+    return data
 
-def file_to_vector(df):
-    # Ensure all entries in the 'transcriptConsumer_en' column are strings
+def vectorized_df(df):
+    results = []
+    print("num_labels", model.config.num_labels)
     df['transcriptConsumer_en'] = df['transcriptConsumer_en'].astype(str)
+    for text in df['transcriptConsumer_en']:
+        binary_vector = get_sentiment_vector(text)
+        print(binary_vector)
+        result = store_sentiment_vector(text, binary_vector)
+        results.append(result)
 
-    # Apply the text_to_vector function and handle any errors gracefully
-    df['vector'] = df['transcriptConsumer_en'].apply(lambda text: text_to_vector(text))
+    # Convert results to a DataFrame
+    sentiment_results_df = pd.DataFrame(results, columns=['transcriptConsumer_en'] + cols)
 
-    # Check the first few entries to ensure vectors are correct
-    print(df['vector'].head())
+    # Concatenate the original DataFrame with the sentiment results
+    final_df = pd.concat([df, sentiment_results_df.drop(columns=['transcriptConsumer_en'])], axis=1)
+    print(final_df.head())
+    return final_df
 
-    # Expand the vector column into multiple columns
-    vectors = pd.DataFrame(df['vector'].tolist(), index=df.index)
-    vectors.columns = [f'vector_{i}' for i in vectors.columns]
 
-    # Drop the original vector column and concatenate the expanded vectors
-    df = df.drop(['vector'], axis=1)
-    df = pd.concat([df, vectors], axis=1)
-
-    df.to_csv("../data/inputs/withoutClassificationVectorized.csv", index=False)
-
-    return df
+def vectorized_single_text(text):
+    binary_vector = get_sentiment_vector(text)
+    result = store_sentiment_vector(text, binary_vector)
+    return result
 
 text = """
-Hi, I fell into a twin that I can't get out of. I don't think it's possible. I don't think it's possible. I'm lost. I don't know what happened to me, what's happening to me. I don't remember and I don't want to remember anything. I don't know what's happening to me, I don't know what I'm doing, what I want, what I'm interested in is just drinking some kind of lol, this is the best and most reliable friend, isn't it good? There are no friends, only one and only friend, this is drinking, I don't want to hear that word, friendship with friendship, what? I don't know why I'm still in this life anyway I feel like wind and air so why?? It's just a waste, I don't know, I don't know, I'm not interested either, really, I'm in a kind of bubble of my own, yes, I called, I was in a meeting, I don't remember what they said, and they didn't get back to me, so I'm probably not interested, I don't know, I'm broken by everything, I don't care about anything anymore, sorry for the sentence about my dick I can't take this whole life anymore. I'm already 35. What can I tell you, how beautiful my moments are, how happy I am, how happy I am that I came into this world, how life just smiles at me, how good I am and how happy I am. Unfortunately, I have a family, but I'm not in contact with them. I don't have Hobbies and I don't like to do anything. I listen to everything from everything. Even if I drink and don't have it. I probably won't like it. The song is not for nothing. Now I received very good and happy news that they closed my 2 cases, do you understand how black I am? What I didn't understand was exactly what kind of light they closed my complaints, they don't treat me there either, it doesn't interest me today, it's just a celebration, drink more for closing the cases, everything is fine, I'm not I'm angry or hurt don't feel uncomfortable I'm already immune I can't be hurt by anything and nothing after this year with already I'm sorry yes I'm not explaining myself correctly and I'm sorry for that understand it's from the drinking I'm really not I'm not out of it I want me to tell you Something that I saw myself a little bit more, really a little bit, that I also get worse from drinking, why alone I can't do it anyway, I don't have a family to support me, no, there is no one to help me, they haven't helped me until now, why will they help me now, the difficulty in general is my whole life And they didn't help me and this year what I went through in my whole life is nothing
+Hey I don't know what's happening to me what is happening to my body I always make mistakes and don't learn Me and my big mouth my mother's cup My biggest mistake in this life that I exist I have to keep my mouth shut and do and deal with things without telling True, but now I do it like a grown-up Aaaaaaaaa There is no one I don't want anyone either, I don't have faith in anyone It's best to be alone, lonely like a bitch, the best and the truest I'm sorry I'm taking it all out on you It's best to keep the right to remain silent and that's it Obviously Do not want you are right no matter everything is fine All is well
 """
-text_to_vector(text)
+print(vectorized_single_text(text))
+#binary_vector = get_sentiment_vector(text)
+#print(binary_vector)

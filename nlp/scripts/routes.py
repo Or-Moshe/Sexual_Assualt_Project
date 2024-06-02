@@ -1,6 +1,6 @@
 # routes.py
 from flask import Blueprint, jsonify, request
-from nlp.scripts.execute import do_nlp, classify_file_by_vectors, classify_file_without_vectors
+from nlp.scripts.execute import do_nlp, classify_file_by_vectors, classify_file_without_vectors, classify_single_text_by_vectors
 
 # Create a Blueprint
 main_blueprint = Blueprint('main_blueprint', __name__)
@@ -18,19 +18,31 @@ def analyze_text():
     else:
         return jsonify({"error": "No text provided"}), 400
 
+@main_blueprint.route('/analyze_by_vectors', methods=['GET'])
+def analyze_by_vectors():
+    # Retrieve text from query parameter
+    text = request.args.get('text', '')  # Default to empty string if not provided
+    print("text: ", text)
+    if text:  # Check if text is not empty
+        result = classify_single_text_by_vectors(text)
+        print("result: ", result)
+        return jsonify(result)
+    else:
+        return jsonify({"error": "No text provided"}), 400
+
 @main_blueprint.route('/analyze_file_by_vectors', methods=['POST'])
 def analyze_file_by_vectors():
     # Retrieve text from query parameter
     text = request.args.get('text', '')  # Default to empty string if not provided
     print("text: ", text)
     if text:  # Check if text is not empty
-        result = classify_file_by_vectors(text, model_path)
+        result = classify_single_text_by_vectors(text)
         return jsonify(result)
     else:
         return jsonify({"error": "No text provided"}), 400
 
 @main_blueprint.route('/analyze_file_no_vectors', methods=['POST'])
-def analyze_file_by_vectors():
+def analyze_file_no_vectors():
     # Retrieve text from query parameter
     text = request.args.get('text', '')  # Default to empty string if not provided
     print("text: ", text)

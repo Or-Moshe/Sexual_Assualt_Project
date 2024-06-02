@@ -8,7 +8,7 @@ import openpyxl
 from nlp.scripts.preprocessing import Preprocessing
 import torch
 from nlp.scripts.translate import Translate
-from nlp.scripts.text_to_vector import text_to_vector, file_to_vector
+from nlp.scripts.text_to_vector import text_to_vector, file_to_vector, vectorized_df
 from nlp.scripts.vector_to_classification import classify_file
 '''
 tanslated_path = "../data/withoutClassificationTranslated.csv"
@@ -28,7 +28,7 @@ result_path = "../data/withoutClassificationConsumerResults-he.xlsx"
 
 csv_path = "../data/inputs/withoutClassificationTranslated.csv"
 tanslated_path = "../data/inputs/withoutClassificationTranslated.csv"
-model_path = "../models/predict_flags-model-all-data-consumer-en"
+model_path = "../models/text-to-vector/predict_flags-model-all-data-consumer-en"
 result_path = "../data/results/hebrew/predictionsConsumerResults-en.csv"
 column_to_predict = 'transcriptConsumer_en'
 
@@ -48,14 +48,18 @@ def classify_file_by_vectors():
     df = pd.read_csv(tanslated_path)
     file_to_vector(df)
 '''
-    df = pd.read_csv("../data/inputs/withoutClassificationTranslated.csv")
+    df = pd.read_csv("../data/inputs/withoutClassificationTranslated.csv").head(5)
     # Vectorize the text and update the DataFrame
-    df = file_to_vector(df)
+    sentiment_results_df = vectorized_df(df)
+    result_path = "../data/results/english/text-to-vector-results.csv"
+    sentiment_results_df.to_csv(result_path, index=False)
     # Check the DataFrame structure
-    print(df.head())
-    classify_file(df)
+    #final_df = classify_file(df)
+
 def classify_single_text_by_vectors(text):
-    vector = text_to_vector(text)
+    model_to_vector_path = "../models/text-to-vector/predict_flags-model-all-data-consumer-en"
+    vector = text_to_vector(text, model_to_vector_path)
+    print(f'Vector: {vector}')
     classifier_model_path = '../models/vector-to-classification/random_forest_model.pkl'
     # Load your classifier model
     with open(classifier_model_path, 'rb') as file:
@@ -112,6 +116,8 @@ def do_nlp(text, model_path):
 text = """
 Hey ?? please help me I fell for a twin and I'm screaming out loud Do not know No mistake But God is not with me All is well I'm lonely, I'll be lonely I was a bitch, I'll stay a bitch of what exactly what I'm a piece of shit Because from the day I know myself I am guilty Your testimony that you don't know me is the best Because if you knew me, you would regret it like everyone else what a mother you have an angel I'm on fire for her What would I do without her? A bitch can't stand her A mistake she brought me into this world Ruined my life Every day and every day I drink and lose myself I don't care about my dick
 """
+#classify_single_text_by_vectors(text)
 #print(f'classify_text_by_vectors results: {classify_text_by_vectors(text)}')
 #print(f'do_nlp results: {do_nlp(text, model_path)}')
+#classify_file_by_vectors()
 classify_file_by_vectors()

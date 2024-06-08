@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wang/Views/StatisticsPage.dart';
+import 'package:wang/Views/UploadContext.dart';
 import 'package:wang/Views/WhatsappConnect.dart';
 
 class MainPage extends StatelessWidget {
@@ -87,10 +88,10 @@ class MainPage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => StatisticsPage()),
+                                    builder: (context) => UploadContext()),
                               );
                             },
-                            child: Text('Statistics Page',
+                            child: Text('Upload Context',
                                 style: TextStyle(fontSize: 20)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors

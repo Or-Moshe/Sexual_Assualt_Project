@@ -10,9 +10,9 @@ class UploadContext extends StatefulWidget {
 class _UploadContextState extends State<UploadContext> {
   final TextEditingController _controller = TextEditingController();
 
-  Future<String> sendDataToServer(String text) async {
+  Future<String> sendDataToServer(String text, String lang) async {
     try {
-      final uri = Uri.http('127.0.0.1:5000', '/analyze', {'text': text});
+      final uri = Uri.http('127.0.0.1:8000', '/analyze_by_vectors', {'text': text, 'lang': lang});
       final response = await http.get(uri, headers: {
         'Content-Type': 'application/json',
       });
@@ -50,7 +50,7 @@ class _UploadContextState extends State<UploadContext> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  String response = await sendDataToServer(_controller.text);
+                  String response = await sendDataToServer(_controller.text, 'en'); // Change 'en' to the desired language
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(

@@ -45,7 +45,8 @@ def get_sentiment_vector(text, model_path, threshold=0.5):
     return binary_vector.numpy().flatten()
 
 def store_sentiment_vector(text, vector):
-    data = {'transcriptConsumer_en': text}
+    #data = {'transcriptConsumer_en': text}
+    data = {}
     print(vector)
     for i, col in enumerate(cols):
         data[col] = vector[i]
@@ -71,10 +72,13 @@ def vectorized_df(df):
 
 
 def vectorized_single_text(text, lang):
-    model_path = "../models/text-to-vector/customer-en-encoded-en" if lang == 'en' else "../models/text-to-vector/customer-en-encoded-he"
+    #from app:
+    model_path = "./nlp/models/text-to-vector/en/customer-en-encoded" if lang == 'en' else "./nlp/models/text-to-vector/en/customer-en-encoded"
+    #model_path = "../models/text-to-vector/en/customer-en-encoded" if lang == 'en' else "../models/text-to-vector/en/customer-en-encoded"
     binary_vector = get_sentiment_vector(text, model_path)
+    print('binary_vector', binary_vector)
     result = store_sentiment_vector(text, binary_vector)
-    print(result)
+    print('result',result)
     return result
 
 text = """

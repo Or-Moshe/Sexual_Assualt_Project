@@ -11,7 +11,7 @@ def text_to_vector(text):
     if not isinstance(text, str):
         text = str(text)
 
-    model_to_vector_path = "../models/text-to-vector/customer-en-encoded"
+    model_to_vector_path = "../models/text-to-vector/en/customer-en-encoded"
     model_to_vector = BertForSequenceClassification.from_pretrained(model_to_vector_path)
     tokenizer = BertTokenizerFast.from_pretrained(model_to_vector_path)
 

@@ -62,9 +62,10 @@ def classify_file_by_vectors():
     final_df = classify_file(df)
 
 def classify_single_text_by_vectors_en(text):
-    sentiment_result = vectorized_single_text(text, 'en')
-    prediction = predict_single_text(sentiment_result['vector'])
-    return prediction
+    result = vectorized_single_text(text, 'en')
+    result['prediction'] = predict_single_text(result['vector'])
+    print('result',result)
+    return result
 
 def classify_single_text_by_vectors_he(text):
     sentiment_result = vectorized_single_text(text, 'he')
@@ -72,7 +73,9 @@ def classify_single_text_by_vectors_he(text):
     return prediction
 
 def classify_single_text_en(text):
-    model_path = "../models/torch-bert-base-uncased-model-all-data-consumer-he"
+    # from app:
+    model_path = "./nlp//models/torch-bert-base-uncased-model-all-data-consumer-he"
+    #model_path = "../models/torch-bert-base-uncased-model-all-data-consumer-he"
     model = BertForSequenceClassification.from_pretrained(model_path)
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", max_length=512)
     nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
@@ -160,5 +163,5 @@ Hey ?? please help me I fell for a twin and I'm screaming out loud Do not know N
 #classify_single_text_by_vectors(text)
 #print(f'classify_text_by_vectors results: {classify_text_by_vectors(text)}')
 #print(f'do_nlp results: {do_nlp(text, model_path)}')
-classify_single_text_by_vectors(text)
-classify_single_text(text)
+#classify_single_text_by_vectors_en(text)
+#classify_single_text_en(text)

@@ -3,7 +3,9 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 
-model_path = "../models/vector-to-classification/SimpleNNClassifier-model-customer-en.pth"
+#from app:
+model_path = "./nlp/models/vector-to-classification/SimpleNNClassifier-model-customer-en.pth"
+#model_path = "../models/vector-to-classification/SimpleNNClassifier-model-customer-en.pth"
 
 cols = ['despair_0', 'despair_1', 'loneliness_0',
         'loneliness_1', 'emotional overflow_0', 'emotional overflow_1',
@@ -99,7 +101,7 @@ def predict_file():
             predictions.append(prediction)
 
     df['predictions'] = predictions
-    df.to_csv("../data/results/vectorized-one-encoded-SimpleNNClassifier.csv", index=False)
+    df.to_csv("../data/results/vectorized-one-encoded-SimpleNNClassifier-en.csv", index=False)
     return df
 
 

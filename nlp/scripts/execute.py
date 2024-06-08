@@ -9,7 +9,8 @@ from nlp.scripts.preprocessing import Preprocessing
 import torch
 from nlp.scripts.translate import Translate
 from nlp.scripts.text_to_vector import vectorized_single_text, vectorized_df
-from nlp.scripts.vector_to_classification import classify_file
+from nlp.scripts.vector_to_classification_v2 import predict_single_text
+
 '''
 tanslated_path = "../data/withoutClassificationTranslated.csv"
 model_path = "../models/torch-bert-base-uncased-model-all-data"
@@ -28,7 +29,7 @@ result_path = "../data/withoutClassificationConsumerResults-he.xlsx"
 
 csv_path = "../data/inputs/withoutClassificationTranslated.csv"
 tanslated_path = "../data/inputs/withoutClassificationTranslated.csv"
-model_path = "../models/text-to-vector/predict_flags-model-all-data-consumer-en"
+
 result_path = "../data/results/hebrew/predictionsConsumerResults-en.csv"
 column_to_predict = 'transcriptConsumer_en'
 
@@ -48,18 +49,46 @@ def classify_file_by_vectors():
     df = pd.read_csv(tanslated_path)
     file_to_vector(df)
 '''
-    df = pd.read_csv("../data/inputs/withoutClassificationTranslated.csv").head(5)
+
+    '''
+    df = pd.read_csv("../data/inputs/withoutClassificationTranslated.csv")
     # Vectorize the text and update the DataFrame
     sentiment_results_df = vectorized_df(df)
     result_path = "../data/results/english/text-to-vector-results.csv"
     sentiment_results_df.to_csv(result_path, index=False)
+    '''
     # Check the DataFrame structure
-    #final_df = classify_file(df)
+    df = pd.read_csv("../data/results/english/text-to-vector-results.csv")
+    final_df = classify_file(df)
 
-def classify_single_text_by_vectors(text):
-    sentiment_result = vectorized_single_text(text)
-    return convert_numpyInt_to_int(sentiment_result)
+def classify_single_text_by_vectors_en(text):
+    sentiment_result = vectorized_single_text(text, 'en')
+    prediction = predict_single_text(sentiment_result['vector'])
+    return prediction
 
+def classify_single_text_by_vectors_he(text):
+    sentiment_result = vectorized_single_text(text, 'he')
+    prediction = predict_single_text(sentiment_result['vector'])
+    return prediction
+
+def classify_single_text_en(text):
+    model_path = "../models/torch-bert-base-uncased-model-all-data-consumer-he"
+    model = BertForSequenceClassification.from_pretrained(model_path)
+    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", max_length=512)
+    nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+    result = nlp(text)
+    print(result)
+    return result[0]['label'], result[0]['score']
+
+def classify_single_text_he(text):
+    model_path = "../models/torch-bert-base-uncased-model-all-data-consumer-he"
+    model = BertForSequenceClassification.from_pretrained(model_path)
+    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", max_length=512)
+    nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+    result = nlp(text)
+    print(result)
+    return result[0]['label'], result[0]['score']
+"""
 def classify_single_text_by_vectors2(text):
     model_to_vector_path = "../models/text-to-vector/predict_flags-model-all-data-consumer-en"
     vector = text_to_vector(text, model_to_vector_path)
@@ -73,7 +102,7 @@ def classify_single_text_by_vectors2(text):
     predicted_classification = classifier_model.predict(vector)
     print(f'Predicted Classification: {predicted_classification}')
 
-
+"""
 def translate_file():
     df = pd.read_csv(csv_path, usecols=['transcriptAll', 'transcriptConsumer'])
     preprocessing = Preprocessing(df)
@@ -81,7 +110,7 @@ def translate_file():
     translate = Translate(preprocessing.df)
     df = translate.translate_dataframe(tanslated_path)
     return df
-def classify_file_without_vectors():
+def classify_file_without_vectors_he():
 
     df = pd.read_excel(csv_path, usecols=['transcriptAll', 'transcriptConsumer_en'])
     preprocessing = Preprocessing(df)
@@ -131,3 +160,5 @@ Hey ?? please help me I fell for a twin and I'm screaming out loud Do not know N
 #classify_single_text_by_vectors(text)
 #print(f'classify_text_by_vectors results: {classify_text_by_vectors(text)}')
 #print(f'do_nlp results: {do_nlp(text, model_path)}')
+classify_single_text_by_vectors(text)
+classify_single_text(text)

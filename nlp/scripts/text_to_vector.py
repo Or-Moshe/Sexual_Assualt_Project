@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 #from app:
-model_to_vector_path = "./nlp/models/text-to-vector/customer-en-encoded"
+#model_to_vector_path = "./nlp/models/text-to-vector/customer-en-encoded"
 #model_to_vector_path = "../models/text-to-vector/customer-en-encoded"
 
 cols = ['despair_0', 'despair_1', 'loneliness_0',
@@ -20,16 +20,15 @@ cols = ['despair_0', 'despair_1', 'loneliness_0',
         'obligation to report occording law_1', 'support for support circuls_0',
         'support for support circuls_1']
 
-model = BertForSequenceClassification.from_pretrained(model_to_vector_path)
-tokenizer = BertTokenizerFast.from_pretrained(model_to_vector_path)
-model.eval()
-
-def prepare_input(text):
+def prepare_input(text, tokenizer):
     encoding = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=512)
     return encoding
 
-def predict_sentiments(text):
-    inputs = prepare_input(text)
+def predict_sentiments(text, model_path):
+    model = BertForSequenceClassification.from_pretrained(model_path)
+    tokenizer = BertTokenizerFast.from_pretrained(model_path)
+    model.eval()
+    inputs = prepare_input(text, tokenizer)
     with torch.no_grad():
         outputs = model(**inputs)
         logits = outputs.logits
@@ -40,8 +39,8 @@ def get_binary_vector(logits, threshold=0.5):
     binary_vector = (probs > threshold).int()
     return binary_vector
 
-def get_sentiment_vector(text, threshold=0.5):
-    logits = predict_sentiments(text)
+def get_sentiment_vector(text, model_path, threshold=0.5):
+    logits = predict_sentiments(text, model_path)
     binary_vector = get_binary_vector(logits, threshold)
     return binary_vector.numpy().flatten()
 
@@ -50,11 +49,11 @@ def store_sentiment_vector(text, vector):
     print(vector)
     for i, col in enumerate(cols):
         data[col] = vector[i]
+    data['vector'] = np.array(vector)
     return data
 
 def vectorized_df(df):
     results = []
-    print("num_labels", model.config.num_labels)
     df['transcriptConsumer_en'] = df['transcriptConsumer_en'].astype(str)
     for text in df['transcriptConsumer_en']:
         binary_vector = get_sentiment_vector(text)
@@ -71,9 +70,11 @@ def vectorized_df(df):
     return final_df
 
 
-def vectorized_single_text(text):
-    binary_vector = get_sentiment_vector(text)
+def vectorized_single_text(text, lang):
+    model_path = "../models/text-to-vector/customer-en-encoded-en" if lang == 'en' else "../models/text-to-vector/customer-en-encoded-he"
+    binary_vector = get_sentiment_vector(text, model_path)
     result = store_sentiment_vector(text, binary_vector)
+    print(result)
     return result
 
 text = """

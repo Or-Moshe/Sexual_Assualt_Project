@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:wang/Views/StatisticsPage.dart';
 import 'package:wang/Views/UploadContext.dart';
 import 'package:wang/Views/WhatsappConnect.dart';
 

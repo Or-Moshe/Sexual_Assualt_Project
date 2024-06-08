@@ -6,3 +6,4 @@ python-dotenv
 openpyxl
 datasets
 scikit-learn
+flask-cors

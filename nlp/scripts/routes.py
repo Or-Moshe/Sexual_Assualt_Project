@@ -1,6 +1,10 @@
 # routes.py
 from flask import Blueprint, jsonify, request
-from nlp.scripts.execute import do_nlp, classify_file_by_vectors, classify_file_without_vectors_he, classify_single_text_by_vectors_en, classify_single_text_by_vectors_he
+from flask_cors import CORS
+from nlp.scripts.execute import (
+    do_nlp, classify_file_by_vectors, classify_file_without_vectors_he,
+    classify_single_text_by_vectors_en, classify_single_text_by_vectors_he
+)
 
 # Create a Blueprint
 main_blueprint = Blueprint('main_blueprint', __name__)
@@ -27,8 +31,7 @@ def analyze_by_vectors():
     if text:  # Check if text is not empty
         result = classify_single_text_by_vectors_en(text) if lang == 'en' else classify_single_text_by_vectors_he(text)
         print("result: ", result)
-        #result = classify_single_text_by_vectors_en(text)
-        return result
+        return jsonify(result)
     else:
         return jsonify({"error": "No text provided"}), 400
 
@@ -53,7 +56,6 @@ def analyze_file_no_vectors():
         result = classify_file_without_vectors_he(text, model_path)
         res = {"classification": result}
         print("res: ", res)
-        return res
+        return jsonify(res)
     else:
         return jsonify({"error": "No text provided"}), 400
-

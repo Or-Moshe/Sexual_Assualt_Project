@@ -14,7 +14,8 @@ class _UploadContextState extends State<UploadContext> {
   final TextEditingController _controller = TextEditingController();
   bool _isHebrew = false;
 
-  Future<String> sendDataToServer(String text, String lang) async {
+  Future<Map<String, dynamic>> sendDataToServer(
+      String text, String lang) async {
     try {
       final uri = Uri.http('127.0.0.1:8000', '/analyze_by_vectors',
           {'text': text, 'lang': lang});
@@ -23,30 +24,34 @@ class _UploadContextState extends State<UploadContext> {
       });
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body).toString();
+        return jsonDecode(response.body);
       } else {
-        return 'Failed to load data: Status code ${response.statusCode}';
+        return {
+          'error': 'Failed to load data: Status code ${response.statusCode}'
+        };
       }
     } catch (e) {
-      return 'Failed to send data: $e';
+      return {'error': 'Failed to send data: $e'};
     }
   }
 
-  Future<String> sendFileToServer(File file) async {
+  Future<Map<String, dynamic>> sendFileToServer(File file) async {
     try {
-      final uri = Uri.http('127.0.0.1:8000', '/analyze_file_by_vectors');
+      final uri = Uri.http('127.0.0.1:8000', '/analyze_file_no_vectors');
       var request = http.MultipartRequest('POST', uri);
       request.files.add(await http.MultipartFile.fromPath('file', file.path));
       var response = await request.send();
 
       if (response.statusCode == 200) {
         var responseData = await response.stream.bytesToString();
-        return jsonDecode(responseData).toString();
+        return jsonDecode(responseData);
       } else {
-        return 'Failed to load data: Status code ${response.statusCode}';
+        return {
+          'error': 'Failed to load data: Status code ${response.statusCode}'
+        };
       }
     } catch (e) {
-      return 'Failed to send data: $e';
+      return {'error': 'Failed to send data: $e'};
     }
   }
 
@@ -58,24 +63,54 @@ class _UploadContextState extends State<UploadContext> {
         // Handle web-specific logic here if needed
       } else {
         File file = File(result.files.single.path!);
-        String response = await sendFileToServer(file);
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Response from Server'),
-            content: Text(response),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          ),
-        );
+        Map<String, dynamic> response = await sendFileToServer(file);
+        print(response);
+        _showResponseDialog(response);
       }
     }
+  }
+
+  void _showResponseDialog(Map<String, dynamic> response) {
+    String formatValue(dynamic value) {
+      if (value == 1) {
+        return '✓';
+      } else if (value == 0) {
+        return '✗';
+      } else {
+        return value.toString();
+      }
+    }
+
+    String formattedResponse = response.entries.map((entry) {
+      if (entry.value is Map) {
+        return '${entry.key}: {\n' +
+            (entry.value as Map)
+                .entries
+                .map((e) => '  ${e.key}: ${formatValue(e.value)}')
+                .join(',\n') +
+            '\n}';
+      } else {
+        return '${entry.key}: ${formatValue(entry.value)}';
+      }
+    }).join('\n');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Response from Server'),
+        content: SingleChildScrollView(
+          child: Text(formattedResponse),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -116,23 +151,9 @@ class _UploadContextState extends State<UploadContext> {
               ElevatedButton(
                 onPressed: () async {
                   String lang = _isHebrew ? 'he' : 'en';
-                  String response =
+                  Map<String, dynamic> response =
                       await sendDataToServer(_controller.text, lang);
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('Response from Server'),
-                      content: Text(response),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('OK'),
-                        ),
-                      ],
-                    ),
-                  );
+                  _showResponseDialog(response);
                 },
                 child: Text('Send'),
               ),

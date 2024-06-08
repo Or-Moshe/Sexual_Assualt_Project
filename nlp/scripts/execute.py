@@ -79,7 +79,7 @@ def classify_single_text_by_vectors_he(text):
 
 def classify_single_text_en(text):
     # from app:
-    model_path = "./nlp//models/torch-bert-base-uncased-model-all-data-consumer-he"
+    model_path = "./nlp/models/classify-without-vector/en/classify-no-vectors-en"
     #model_path = "../models/torch-bert-base-uncased-model-all-data-consumer-he"
     model = BertForSequenceClassification.from_pretrained(model_path)
     tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", max_length=512)

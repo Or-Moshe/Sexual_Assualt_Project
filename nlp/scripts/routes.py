@@ -6,13 +6,12 @@ import io
 
 from nlp.scripts.execute import (
     do_nlp, classify_file_by_vectors, classify_file_without_vectors_he,
-    classify_single_text_by_vectors_en, classify_single_text_by_vectors_he
+    classify_single_text_by_vectors_en, classify_single_text_by_vectors_he, classify_single_text_en
 )
 
 # Create a Blueprint
 main_blueprint = Blueprint('main_blueprint', __name__)
 
-model_path = "./nlp/models/torch-bert-base-uncased-model"
 
 @main_blueprint.route('/analyze', methods=['GET'])
 def analyze_text():
@@ -21,7 +20,7 @@ def analyze_text():
     lang = request.args.get('lang', '')
     print("text: ", text)
     if text:  # Check if text is not empty
-        result = do_nlp(text, model_path)
+        result = classify_single_text_en(text)
         return jsonify(result)
     else:
         return jsonify({"error": "No text provided"}), 400

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 #from app:
-model_path = "./nlp/models/vector-to-classification/SimpleNNClassifier-model-customer-en.pth"
+model_path = "./nlp/models/vector-to-classification/en/SimpleNNClassifier-model-customer-en.pth"
 #model_path = "../models/vector-to-classification/SimpleNNClassifier-model-customer-en.pth"
 
 cols = ['despair_0', 'despair_1', 'loneliness_0',

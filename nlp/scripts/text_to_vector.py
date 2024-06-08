@@ -20,6 +20,23 @@ cols = ['despair_0', 'despair_1', 'loneliness_0',
         'obligation to report occording law_1', 'support for support circuls_0',
         'support for support circuls_1']
 
+# Mapping from one-hot columns to original features
+column_groupings = {
+    'despair': ['despair_0', 'despair_1'],
+    'loneliness': ['loneliness_0', 'loneliness_1'],
+    'emotional overflow': ['emotional overflow_0', 'emotional overflow_1'],
+    'self blame': ['self blame_0', 'self blame_1'],
+    'anxiety': ['anxiety_0', 'anxiety_1'],
+    'distrust / confusion': ['distrust / confusion_0', 'distrust / confusion_1'],
+    'new assault / new exposure': ['new assault / new exposure_0', 'new assault / new exposure_1'],
+    'level of suicide/ level of risk': [
+        'level of suicide/ level of risk_0', 'level of suicide/ level of risk_1',
+        'level of suicide/ level of risk_2', 'level of suicide/ level of risk_3'
+    ],
+    'obligation to report occording law': ['obligation to report occording law_0', 'obligation to report occording law_1'],
+    'support for support circuls': ['support for support circuls_0', 'support for support circuls_1']
+}
+
 def prepare_input(text, tokenizer):
     encoding = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=512)
     return encoding
@@ -80,6 +97,14 @@ def vectorized_single_text(text, lang):
     result = store_sentiment_vector(text, binary_vector)
     print('result',result)
     return result
+
+# Function to decode one-hot encoded columns to integer values
+def decode_one_hot(data):
+    decoded_data = {}
+    for feature, columns in column_groupings.items():
+        values = [data[col] for col in columns]
+        decoded_data[feature] = int(np.argmax(values))
+    return decoded_data
 
 text = """
 Hey I don't know what's happening to me what is happening to my body I always make mistakes and don't learn Me and my big mouth my mother's cup My biggest mistake in this life that I exist I have to keep my mouth shut and do and deal with things without telling True, but now I do it like a grown-up Aaaaaaaaa There is no one I don't want anyone either, I don't have faith in anyone It's best to be alone, lonely like a bitch, the best and the truest I'm sorry I'm taking it all out on you It's best to keep the right to remain silent and that's it Obviously Do not want you are right no matter everything is fine All is well

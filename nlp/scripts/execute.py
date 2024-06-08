@@ -64,13 +64,16 @@ def classify_file_by_vectors():
 def classify_single_text_by_vectors_en(text):
     result = vectorized_single_text(text, 'en')
     result['prediction'] = predict_single_text(result['vector'])
+    del result['vector']
     print('result',result)
     return result
 
 def classify_single_text_by_vectors_he(text):
-    sentiment_result = vectorized_single_text(text, 'he')
-    prediction = predict_single_text(sentiment_result['vector'])
-    return prediction
+    result = vectorized_single_text(text, 'he')
+    result['prediction'] = predict_single_text(result['vector'])
+    del result['vector']
+    print('result',result)
+    return result
 
 def classify_single_text_en(text):
     # from app:

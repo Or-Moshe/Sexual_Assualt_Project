@@ -49,7 +49,7 @@ def store_sentiment_vector(text, vector):
     data = {}
     print(vector)
     for i, col in enumerate(cols):
-        data[col] = vector[i]
+        data[col] = int(vector[i])
     data['vector'] = np.array(vector)
     return data
 

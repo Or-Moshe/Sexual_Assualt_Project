@@ -29,9 +29,9 @@ def analyze_by_vectors():
     lang = request.args.get('lang', '')
     print("text: ", text)
     if text:  # Check if text is not empty
-        result = classify_single_text_by_vectors_en(text) if lang == 'en' else classify_single_text_by_vectors_he(text)
-        print("result: ", result)
-        return jsonify(result)
+        res = classify_single_text_by_vectors_en(text) if lang == 'en' else classify_single_text_by_vectors_he(text)
+        print("res: ", res)
+        return jsonify(res)
     else:
         return jsonify({"error": "No text provided"}), 400
 

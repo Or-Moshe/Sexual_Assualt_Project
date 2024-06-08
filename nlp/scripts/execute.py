@@ -8,7 +8,7 @@ import openpyxl
 from nlp.scripts.preprocessing import Preprocessing
 import torch
 from nlp.scripts.translate import Translate
-from nlp.scripts.text_to_vector import vectorized_single_text, vectorized_df
+from nlp.scripts.text_to_vector import vectorized_single_text, vectorized_df, decode_one_hot
 from nlp.scripts.vector_to_classification_v2 import predict_single_text
 
 '''
@@ -62,18 +62,20 @@ def classify_file_by_vectors():
     final_df = classify_file(df)
 
 def classify_single_text_by_vectors_en(text):
+    res = {}
     result = vectorized_single_text(text, 'en')
-    result['prediction'] = predict_single_text(result['vector'])
-    del result['vector']
-    print('result',result)
-    return result
+    res['prediction'] = predict_single_text(result['vector'])
+    res['sentiments'] = decode_one_hot(result)
+    print('res',res)
+    return res
 
 def classify_single_text_by_vectors_he(text):
+    res = {}
     result = vectorized_single_text(text, 'he')
-    result['prediction'] = predict_single_text(result['vector'])
-    del result['vector']
-    print('result',result)
-    return result
+    res['prediction'] = predict_single_text(result['vector'])
+    res['sentiments'] = decode_one_hot(result)
+    print('res',res)
+    return res
 
 def classify_single_text_en(text):
     # from app:

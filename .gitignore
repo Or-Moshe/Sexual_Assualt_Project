@@ -91,5 +91,5 @@ target/
 .db
 
 # Ignore 'data' directory
-data/
-models/ze
+data/*
+models/*

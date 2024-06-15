@@ -80,16 +80,15 @@ def upload_csv():
         # Decode the base64 string to bytes
         file_data = base64.b64decode(data['file'])
         filename = data['filename']
-        print(file_data)
-        print(filename)
 
         # If the user does not select a file, the browser submits an empty file without a filename
         if filename == '':
             return jsonify({"error": "No selected file"}), 400
 
         df = pd.read_excel(io.BytesIO(file_data))
-        classify_file_without_vectors_he(df)
-        return jsonify({"success": "success"}), 200
+        results_df = classify_file_without_vectors_he(df)
+        results_data = results_df.to_json(orient='records')
+        return jsonify(results_data), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

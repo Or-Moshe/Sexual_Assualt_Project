@@ -6,7 +6,7 @@ import io
 
 from nlp.scripts.execute import (
     do_nlp, classify_file_by_vectors, classify_file_without_vectors_he,
-    classify_single_text_by_vectors_en, classify_single_text_by_vectors_he, classify_single_text_en
+    classify_single_text_by_vectors_en, classify_single_text_by_vectors_he, classify_single_text_en, classify_single_text_he
 )
 
 # Create a Blueprint
@@ -20,8 +20,8 @@ def analyze_text():
     lang = request.args.get('lang', '')
     print("text: ", text)
     if text:  # Check if text is not empty
-        result = classify_single_text_en(text)
-        return jsonify(result)
+        res = classify_single_text_en(text) if lang == 'en' else classify_single_text_he(text)
+        return jsonify(res)
     else:
         return jsonify({"error": "No text provided"}), 400
 

@@ -10,6 +10,7 @@ import torch
 from nlp.scripts.translate import Translate
 from nlp.scripts.text_to_vector import vectorized_single_text, vectorized_df, decode_one_hot
 from nlp.scripts.vector_to_classification_v2 import predict_single_text
+from nlp.scripts.classfiy_no_vectors import predict_single_text_by_text
 
 '''
 tanslated_path = "../data/withoutClassificationTranslated.csv"
@@ -78,24 +79,37 @@ def classify_single_text_by_vectors_he(text):
     return res
 
 def classify_single_text_en(text):
+    res = {}
     # from app:
-    model_path = "./nlp/models/classify-without-vector/en/classify-no-vectors-en"
-    #model_path = "../models/torch-bert-base-uncased-model-all-data-consumer-he"
-    model = BertForSequenceClassification.from_pretrained(model_path)
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", max_length=512)
+    #model_path = "./nlp/models/classify-without-vector/en/classify-no-vectors-en"
+    model_path = "./nlp/models/classify-without-vector/en/bert-base-multilingual-cased-0-77"
+    res['prediction'] = predict_single_text_by_text(text, model_path)
+    return res
+"""
+    tokenizer = BertTokenizer.from_pretrained(model_path, max_length=512)
     nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
     result = nlp(text)
     print(result)
     return result[0]['label'], result[0]['score']
-
+"""
 def classify_single_text_he(text):
-    model_path = "../models/torch-bert-base-uncased-model-all-data-consumer-he"
-    model = BertForSequenceClassification.from_pretrained(model_path)
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", max_length=512)
+    res = {}
+    # from app:
+    # model_path = "./nlp/models/classify-without-vector/en/classify-no-vectors-en"
+    model_path = "./nlp/models/classify-without-vector/he/bert-base-multilingual-cased-0-74"
+    vector = vectorized_single_text(text, 'he')
+    res['prediction'] = predict_single_text_by_text(text, model_path)
+    res['sentiments'] = decode_one_hot(vector)
+    return res
+
+
+"""
+    tokenizer = BertTokenizer.from_pretrained(model_path, max_length=512)
     nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
     result = nlp(text)
     print(result)
     return result[0]['label'], result[0]['score']
+"""
 """
 def classify_single_text_by_vectors2(text):
     model_to_vector_path = "../models/text-to-vector/predict_flags-model-all-data-consumer-en"

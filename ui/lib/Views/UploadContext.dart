@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class UploadContext extends StatefulWidget {
@@ -14,41 +14,39 @@ class _UploadContextState extends State<UploadContext> {
   final TextEditingController _controller = TextEditingController();
   bool _isHebrew = false;
 
-  Future<Map<String, dynamic>> sendDataToServer(
-      String text, String lang) async {
+  Future<Map<String, dynamic>> sendDataToServer(String text, String lang) async {
     try {
-      final uri = Uri.http('127.0.0.1:8000', '/analyze_by_vectors',
-          {'text': text, 'lang': lang});
-      final response = await http.get(uri, headers: {
-        'Content-Type': 'application/json',
-      });
+      final uri = Uri.http('127.0.0.1:8000', '/analyze_by_vectors', {'text': text, 'lang': lang});
+      final response = await http.get(uri, headers: {'Content-Type': 'application/json'});
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        return {
-          'error': 'Failed to load data: Status code ${response.statusCode}'
-        };
+        return {'error': 'Failed to load data: Status code ${response.statusCode}'};
       }
     } catch (e) {
       return {'error': 'Failed to send data: $e'};
     }
   }
 
-  Future<Map<String, dynamic>> sendFileToServer(File file) async {
+  Future<Map<String, dynamic>> sendFileToServer({Uint8List? bytes, String? filePath, String? filename}) async {
     try {
       final uri = Uri.http('127.0.0.1:8000', '/analyze_file_no_vectors');
       var request = http.MultipartRequest('POST', uri);
-      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      if (kIsWeb) {
+        request.files.add(http.MultipartFile.fromBytes('file', bytes!, filename: filename ?? 'upload.xlsx'));
+      } else {
+        request.files.add(await http.MultipartFile.fromPath('file', filePath!));
+      }
+
       var response = await request.send();
 
       if (response.statusCode == 200) {
         var responseData = await response.stream.bytesToString();
         return jsonDecode(responseData);
       } else {
-        return {
-          'error': 'Failed to load data: Status code ${response.statusCode}'
-        };
+        return {'error': 'Failed to load data: Status code ${response.statusCode}'};
       }
     } catch (e) {
       return {'error': 'Failed to send data: $e'};
@@ -56,15 +54,16 @@ class _UploadContextState extends State<UploadContext> {
   }
 
   Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
     if (result != null) {
       if (kIsWeb) {
-        // Handle web-specific logic here if needed
+        final bytes = result.files.single.bytes;
+        final filename = result.files.single.name;
+        Map<String, dynamic> response = await sendFileToServer(bytes: bytes, filename: filename);
+        _showResponseDialog(response);
       } else {
-        File file = File(result.files.single.path!);
-        Map<String, dynamic> response = await sendFileToServer(file);
-        print(response);
+        final filePath = result.files.single.path!;
+        Map<String, dynamic> response = await sendFileToServer(filePath: filePath);
         _showResponseDialog(response);
       }
     }
@@ -151,8 +150,7 @@ class _UploadContextState extends State<UploadContext> {
               ElevatedButton(
                 onPressed: () async {
                   String lang = _isHebrew ? 'he' : 'en';
-                  Map<String, dynamic> response =
-                      await sendDataToServer(_controller.text, lang);
+                  Map<String, dynamic> response = await sendDataToServer(_controller.text, lang);
                   _showResponseDialog(response);
                 },
                 child: Text('Send'),

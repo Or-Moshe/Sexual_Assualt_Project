@@ -1,4 +1,6 @@
 # routes.py
+import base64
+
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
 import pandas as pd
@@ -67,27 +69,27 @@ def analyze_file_no_vectors():
 
 @main_blueprint.route('/analyze_file_no_vectors', methods=['POST'])
 def upload_csv():
-    # Check if the post request has the file part
-    print(request.files)
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-
-    file = request.files['file']
-
-    # If the user does not select a file, the browser submits an empty file without a filename
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
     try:
-        # Read the file into a pandas DataFrame
-        df = pd.read_csv(io.StringIO(file.stream.read().decode("UTF8")))
-        # Process the DataFrame as needed
-        # Example: print the DataFrame
-        print(df)
+        # Get the JSON data from the request
+        data = request.get_json()
 
-        # You can also convert the DataFrame to JSON and return it
-        data = df.to_json(orient='records')
-        return jsonify(data), 200
+        # Check if 'file' and 'filename' keys are in the JSON data
+        if 'file' not in data or 'filename' not in data:
+            return jsonify({"error": "No file or filename part"}), 400
+
+        # Decode the base64 string to bytes
+        file_data = base64.b64decode(data['file'])
+        filename = data['filename']
+        print(file_data)
+        print(filename)
+
+        # If the user does not select a file, the browser submits an empty file without a filename
+        if filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        df = pd.read_excel(io.BytesIO(file_data))
+        classify_file_without_vectors_he(df)
+        return jsonify({"success": "success"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

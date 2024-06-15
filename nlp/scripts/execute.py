@@ -132,22 +132,17 @@ def translate_file():
     translate = Translate(preprocessing.df)
     df = translate.translate_dataframe(tanslated_path)
     return df
-def classify_file_without_vectors_he():
+def classify_file_without_vectors_he(df):
 
-    df = pd.read_excel(csv_path, usecols=['transcriptAll', 'transcriptConsumer_en'])
     preprocessing = Preprocessing(df)
     df = preprocessing.process_dataframe(column_to_predict)
-    print(df.columns)
-    '''
-    translate = Translate(preprocessing.df)
-    df = translate.translate_dataframe(tanslated_path)
-    df = pd.read_csv(tanslated_path)
-    df[['label', 'score']] = df['transcriptConsumer_en'].apply(lambda text: do_nlp(text, model_path)).apply(pd.Series)
-    '''
-    columns_to_copy = ['count', 'transcriptConsumer']
-    df = df[columns_to_copy].copy()
-    df[['label', 'score']] = df['transcriptConsumer'].apply(lambda text: do_nlp(text, model_path)).apply(pd.Series)
-    df.to_excel(result_path, index=False)
+
+    # Apply the function and expand the results into separate columns
+    predictions = df['transcriptConsumer'].apply(classify_single_text_en).apply(pd.Series)
+
+    # Join the predictions with the original DataFrame
+    df = df.join(predictions)
+    return df
 
 def do_nlp(text, model_path):
     try:

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:html' as html; // For file download functionality
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class UploadContext extends StatefulWidget {
@@ -14,12 +15,16 @@ class _UploadContextState extends State<UploadContext> {
   final TextEditingController _controller = TextEditingController();
   bool _isHebrew = false;
   bool _isLoading = false;
+  bool _useVectors = false;
 
   Future<Map<String, dynamic>> sendDataToServer(
       String text, String lang) async {
     try {
-      final uri = Uri.http('127.0.0.1:8000', '/analyze_by_vectors',
-          {'text': text, 'lang': lang});
+      final uri = Uri.http(
+        '127.0.0.1:8000',
+        _useVectors ? '/analyze_by_vectors' : '/analyze',
+        {'text': text, 'lang': lang},
+      );
       final response =
           await http.get(uri, headers: {'Content-Type': 'application/json'});
 
@@ -35,10 +40,54 @@ class _UploadContextState extends State<UploadContext> {
     }
   }
 
+  Future<void> downloadFile(String base64File, String filename) async {
+    final bytes = base64Decode(base64File);
+
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', filename)
+      ..click();
+    html.Url.revokeObjectUrl(url);
+  }
+
+  Future<void> _pickFile() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    FilePickerResult? result = await FilePicker.platform
+        .pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
+    if (result != null) {
+      final bytes = result.files.single.bytes;
+      final filename = result.files.single.name;
+      if (bytes != null) {
+        try {
+          final response =
+              await sendFileToServer(bytes: bytes, filename: filename);
+          if (response.containsKey('file')) {
+            await downloadFile(response['file'], filename);
+          } else {
+            _showErrorDialog(response['error']);
+          }
+        } catch (e) {
+          _showErrorDialog('Failed to send data: $e');
+        }
+      }
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   Future<Map<String, dynamic>> sendFileToServer(
       {Uint8List? bytes, String? filename}) async {
     try {
-      final uri = Uri.http('127.0.0.1:8000', '/analyze_file_no_vectors');
+      final uri = Uri.http(
+        '127.0.0.1:8000',
+        _useVectors ? '/analyze_file_by_vectors' : '/analyze_file_no_vectors',
+      );
       final bodyTemp =
           jsonEncode({'file': base64Encode(bytes!), 'filename': filename});
       final response = await http.post(
@@ -57,28 +106,6 @@ class _UploadContextState extends State<UploadContext> {
     } catch (e) {
       return {'error': 'Failed to send data: $e'};
     }
-  }
-
-  Future<void> _pickFile() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
-    if (result != null) {
-      final bytes = result.files.single.bytes;
-      final filename = result.files.single.name;
-      if (bytes != null) {
-        Map<String, dynamic> response =
-            await sendFileToServer(bytes: bytes, filename: filename);
-        _showResponseDialog(response);
-      }
-    }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   void _showResponseDialog(Map<String, dynamic> response) {
@@ -144,6 +171,24 @@ class _UploadContextState extends State<UploadContext> {
     );
   }
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -185,6 +230,19 @@ class _UploadContextState extends State<UploadContext> {
                           },
                         ),
                         Text('Hebrew (check for Hebrew, uncheck for English)'),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _useVectors,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _useVectors = value ?? false;
+                            });
+                          },
+                        ),
+                        Text('Use Vectors'),
                       ],
                     ),
                     SizedBox(height: 20),

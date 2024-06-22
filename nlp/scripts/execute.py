@@ -135,7 +135,7 @@ def translate_file():
 def classify_file_without_vectors_he(df):
 
     preprocessing = Preprocessing(df)
-    df = preprocessing.process_dataframe(column_to_predict)
+    df = preprocessing.process_dataframe("transcriptConsumer")
 
     # Apply the function and expand the results into separate columns
     predictions = df['transcriptConsumer'].apply(classify_single_text_en).apply(pd.Series)

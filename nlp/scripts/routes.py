@@ -1,3 +1,4 @@
+
 # routes.py
 import base64
 import traceback
@@ -121,16 +122,56 @@ def upload_csv():
         # Decode the base64 string to bytes
         file_data = base64.b64decode(data['file'])
         filename = data['filename']
-        print(file_data)
-        print(filename)
+        print("Received filename:", filename)
 
         # If the user does not select a file, the browser submits an empty file without a filename
         if filename == '':
             return jsonify({"error": "No selected file"}), 400
 
-        df = pd.read_excel(io.BytesIO(file_data))
-        classify_file_without_vectors_he(df)
-        return jsonify({"success": "success"}), 200
+        # Read the file into a pandas DataFrame
+        try:
+            df = pd.read_excel(io.BytesIO(file_data))
+            print("DataFrame columns:", df.columns)
+            print("Initial DataFrame shape:", df.shape)
+        except Exception as e:
+            print("Error reading Excel file:", str(e))
+            traceback.print_exc()
+            return jsonify({"error": f"Error reading Excel file: {str(e)}"}), 500
+
+        # Process the DataFrame as needed
+        try:
+            column_to_predict = 'transcriptConsumer'  # Use the correct column name
+            preprocessing = Preprocessing(df)
+            df = preprocessing.process_dataframe(column_to_predict)
+            print("DataFrame shape after preprocessing:", df.shape)
+            df = classify_file_without_vectors_he(df)  # Ensure this function is correctly used
+            print("DataFrame shape after classification:", df.shape)
+            print(df.head())
+        except KeyError as e:
+            print("KeyError: The column does not exist:", str(e))
+            traceback.print_exc()
+            return jsonify({"error": f"KeyError: The column does not exist: {str(e)}"}), 400
+        except Exception as e:
+            print("Error processing file:", str(e))
+            traceback.print_exc()
+            return jsonify({"error": f"Error processing file: {str(e)}"}), 500
+
+        # Convert the DataFrame to Excel
+        try:
+            output = io.BytesIO()
+            writer = pd.ExcelWriter(output, engine='openpyxl')
+            df.to_excel(writer, index=False, sheet_name='Sheet1')
+            writer.close()  # Use close instead of save
+            output.seek(0)
+
+            # Encode the output file to base64
+            response_data = base64.b64encode(output.getvalue()).decode()
+            print("Generated file length:", len(response_data))
+            return jsonify({"file": response_data}), 200
+        except Exception as e:
+            print("Error creating Excel file:", str(e))
+            traceback.print_exc()
+            return jsonify({"error": f"Error creating Excel file: {str(e)}"}), 500
 
     except Exception as e:
         print("Unexpected error:", str(e))
